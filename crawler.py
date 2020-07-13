@@ -15,7 +15,7 @@ def search() :
     global API, waitQuery, waitTime, engineBlow
     query = str(input("Search something : "))
     total_number = int(input("n : "))
-    cursor = tweepy.Cursor(API.search, query + " -RT", tweet_mode = "extended", lang = "en").items()
+    cursor = tweepy.Cursor(API.search, query + " -RT", tweet_mode = "extended", lang = "id").items()
     count = 0
     error = 0
     secondcount = 0

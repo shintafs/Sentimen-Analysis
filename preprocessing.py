@@ -50,7 +50,7 @@ class Preprocessing :
     def text_process(self,raw_text):
         nopunc = [char for char in list(raw_text) if char not in string.punctuation]
         nopunc = ''.join(nopunc)
-        return [word for word in nopunc.lower().split() if word.lower() not in stopwords.words('english')]
+        return [word for word in nopunc.lower().split() if word.lower() not in stopwords.words('indonesian')]
 
     def geo_mean(self, x):
         y = json.loads(x)

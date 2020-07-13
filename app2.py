@@ -1,5 +1,5 @@
 import pandas as pd
-from sklearn.pipeline import Pipeline
+from sklearn.pipeline import make_pipeline, Pipeline
 from preprocessing import Preprocessing
 # from sklearn.externals import joblib
 # import sklearn.external.joblib as extjoblib
@@ -12,6 +12,21 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.svm import SVC
+import nltk
+from nltk.corpus import stopwords
+from nltk.stem import SnowballStemmer
+from nltk.tokenize import TweetTokenizer
+
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
+from sklearn.pipeline import make_pipeline, Pipeline
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import make_scorer, accuracy_score, f1_score
+from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import confusion_matrix, roc_auc_score, recall_score, precision_score
 
 
 imdb_dataset = pd.read_csv("imdb_labelled2.txt", sep="\t", header=None)
@@ -57,12 +72,26 @@ print("Dataset dibersihkan!")
 print("\nMulai train / test dengan perbandingan training 80% dan testing 20%")
 # test nya hanya 20%, training nya 80%
 X_train, X_test, y_train, y_test = train_test_split(imdb_dataset['text'], imdb_dataset['label'], test_size=0.2)
+en_stopwords = set(stopwords.words("indonesian")) 
+kfolds = StratifiedKFold(n_splits=5, shuffle=True, random_state=1)
+vectorizer = CountVectorizer(
+    analyzer = 'word',
+    strip_accents='ascii',
+    lowercase = True,
+    ngram_range=(1, 1),
+    stop_words = en_stopwords)
+# pipeline = Pipeline([('bow', CountVectorizer(strip_accents='ascii', lowercase=True)),('tfidf', TfidfTransformer()), ('classifier', MultinomialNB()), ])
+pipeline = make_pipeline(vectorizer, SVC(probability=True, kernel="linear", class_weight="balanced"))
+grid = GridSearchCV(pipeline,
+                    param_grid = {'svc__C': [0.01, 0.1, 1]}, 
+                    cv = kfolds,
+                    scoring="roc_auc",
+                    verbose=1,   
+                    n_jobs=-1)
 
-pipeline = Pipeline([('bow', CountVectorizer(strip_accents='ascii', lowercase=True)),('tfidf', TfidfTransformer()), ('classifier', MultinomialNB()), ])
+# parameters = {'bow__ngram_range': [(1, 1), (1, 2)], 'tfidf__use_idf': (True, False),'classifier__alpha': (1e-2, 1e-3), }
 
-parameters = {'bow__ngram_range': [(1, 1), (1, 2)], 'tfidf__use_idf': (True, False),'classifier__alpha': (1e-2, 1e-3), }
-
-grid = GridSearchCV(pipeline, cv=10, param_grid=parameters, verbose=1)
+# grid = GridSearchCV(pipeline, cv=10, param_grid=parameters, verbose=1)
 grid.fit(X_train, y_train)
 
 # hasil ->
