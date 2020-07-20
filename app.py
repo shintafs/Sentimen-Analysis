@@ -14,7 +14,8 @@ from sklearn.metrics import classification_report, confusion_matrix, accuracy_sc
 from sklearn.naive_bayes import MultinomialNB
 
 
-imdb_dataset = pd.read_csv("dataset2000.txt", sep="\t", header=None, encoding='cp1252', error_bad_lines=False)
+imdb_dataset = pd.read_csv("dataset2k.txt", sep="\t",
+                           header=None, encoding='cp1252', error_bad_lines=False)
 imdb_dataset.columns = ['text', 'label']
 positives = imdb_dataset['label'][imdb_dataset.label == 1]
 negatives = imdb_dataset['label'][imdb_dataset.label == 0]
@@ -115,8 +116,10 @@ for review in imdb_dataset['text']:
 print("write ke csv")
 hehe = {"text": text_, "label": label_}
 hehe2 = pd.DataFrame(data=hehe)
-hehe2.to_csv('test_ulang_dataset.csv', header=True, index=False, encoding='cp1252', errors='ignore', error_bad_lines=False)
-hasil_test_ulang = pd.read_csv("test_ulang_dataset.csv", encoding='cp1252', header='infer', error_bad_lines=False)
+hehe2.to_csv('test_ulang_dataset.csv', header=True, index=False,
+             encoding='cp1252', errors='ignore', error_bad_lines=False)
+hasil_test_ulang = pd.read_csv(
+    "test_ulang_dataset.csv", encoding='cp1252', header='infer', error_bad_lines=False)
 hasil_test_ulang.columns = ['text', 'label']
 
 # recheck_pos = hasil_test_ulang['label'][hasil_test_ulang.label == "Positive"]
