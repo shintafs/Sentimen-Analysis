@@ -14,7 +14,7 @@ from sklearn.metrics import classification_report, confusion_matrix, accuracy_sc
 from sklearn.naive_bayes import MultinomialNB
 
 
-imdb_dataset = pd.read_csv("imdb_labelled2.txt", sep="\t", header=None)
+imdb_dataset = pd.read_csv("dataset2000.txt", sep="\t", header=None)
 imdb_dataset.columns = ['text', 'label']
 positives = imdb_dataset['label'][imdb_dataset.label == 1]
 negatives = imdb_dataset['label'][imdb_dataset.label == 0]
@@ -41,26 +41,32 @@ dataset = imdb_dataset
 
 dataset.to_pickle("dataset.p")
 dataset_pickle = pd.read_pickle("dataset.p")
-dataset_pickle['text'] = dataset_pickle['text'].apply(Preprocessing().processTweet)
+dataset_pickle['text'] = dataset_pickle['text'].apply(
+    Preprocessing().processTweet)
 dataset_pickle_pickle = dataset_pickle.drop_duplicates('text')
 dataset_pickle.shape
 
 eng_stop_words = stopwords.words('indonesian')
 dataset_pickle = dataset_pickle.copy()
-dataset_pickle['tokens'] = dataset_pickle['text'].apply(Preprocessing().text_process)
+dataset_pickle['tokens'] = dataset_pickle['text'].apply(
+    Preprocessing().text_process)
 
-bow_transformer = CountVectorizer(analyzer=Preprocessing().text_process).fit(dataset_pickle['text'])
+bow_transformer = CountVectorizer(
+    analyzer=Preprocessing().text_process).fit(dataset_pickle['text'])
 messages_bow = bow_transformer.transform(dataset_pickle['text'])
 # print('Shape of Sparse Matrix: ', messages_bow.shape)
 # print('Amount of Non-Zero occurences: ', messages_bow.nnz)
 print("Dataset dibersihkan!")
 print("\nMulai train / test dengan perbandingan training 80% dan testing 20%")
 # test nya hanya 20%, training nya 80%
-X_train, X_test, y_train, y_test = train_test_split(imdb_dataset['text'], imdb_dataset['label'], test_size=0.2)
+X_train, X_test, y_train, y_test = train_test_split(
+    imdb_dataset['text'], imdb_dataset['label'], test_size=0.2)
 
-pipeline = Pipeline([('bow', CountVectorizer(strip_accents='ascii', lowercase=True)),('tfidf', TfidfTransformer()), ('classifier', MultinomialNB()), ])
+pipeline = Pipeline([('bow', CountVectorizer(strip_accents='ascii', lowercase=True)),
+                     ('tfidf', TfidfTransformer()), ('classifier', MultinomialNB()), ])
 
-parameters = {'bow__ngram_range': [(1, 1), (1, 2)], 'tfidf__use_idf': (True, False),'classifier__alpha': (1e-2, 1e-3), }
+parameters = {'bow__ngram_range': [(1, 1), (1, 2)], 'tfidf__use_idf': (
+    True, False), 'classifier__alpha': (1e-2, 1e-3), }
 
 grid = GridSearchCV(pipeline, cv=10, param_grid=parameters, verbose=1)
 grid.fit(X_train, y_train)
@@ -80,18 +86,21 @@ model_NB = joblib.load("model.pkl")
 
 y_preds = model_NB.predict(X_test)
 
-print('akurasi dari train/test split: ', str(accuracy_score(y_test, y_preds) * 100) + "%")
+print('akurasi dari train/test split: ',
+      str(accuracy_score(y_test, y_preds) * 100) + "%")
 print('confusion matrix: \n', confusion_matrix(y_test, y_preds))
 print(classification_report(y_test, y_preds))
 
 # testing
 model_NB = joblib.load("model.pkl")
 
+
 def label_to_str(x):
     if x == 0:
         return 'Negative'
     else:
         return 'Positive'
+
 
 x = 0
 text_ = [0] * len(imdb_dataset)
@@ -106,7 +115,8 @@ for review in imdb_dataset['text']:
 print("write ke csv")
 hehe = {"text": text_, "label": label_}
 hehe2 = pd.DataFrame(data=hehe)
-hehe2.to_csv('test_ulang_dataset.csv', header=True, index=False, encoding='utf-8')
+hehe2.to_csv('test_ulang_dataset.csv', header=True,
+             index=False, encoding='utf-8')
 hasil_test_ulang = pd.read_csv("test_ulang_dataset.csv", header='infer')
 hasil_test_ulang.columns = ['text', 'label']
 
@@ -152,4 +162,3 @@ print("Akurasi =  " + str(
 print("Presisi = " + str((true_positive / (true_positive + false_positive)) * 100) + "%")
 print("Recall = " + str((true_positive / (true_positive + false_negative)) * 100) + "%")
 print("DONE!")
-

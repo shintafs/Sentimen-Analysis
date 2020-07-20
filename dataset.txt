@@ -18,4 +18,4 @@ sangat buruk pekerjaannya.  	0
 sangat jelek sekali jokowi.  	0
 kinerja yang baik.  	1
 kinerja buruk.  	0
-jokowi sangat hebat.  	0
+jokowi sangat hebat.  	1
