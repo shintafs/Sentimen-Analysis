@@ -9,10 +9,7 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.svm import SVC
 from sklearn.preprocessing import StandardScaler
-import nltk
 from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 from nltk.tokenize import TweetTokenizer
@@ -31,7 +28,7 @@ import time
 
 
 svm_dataset = pd.read_csv("dataset2k.txt", sep="\t",
-                           header=None, encoding='cp1252', error_bad_lines=False)
+                          header=None, encoding='cp1252', error_bad_lines=False)
 svm_dataset.columns = ['text', 'label']
 positives = svm_dataset['label'][svm_dataset.label == 1]
 negatives = svm_dataset['label'][svm_dataset.label == 0]
@@ -58,32 +55,36 @@ dataset = svm_dataset
 Start = time.time()
 dataset.to_pickle("dataset.p")
 dataset_pickle = pd.read_pickle("dataset.p")
-dataset_pickle['text'] = dataset_pickle['text'].apply(Preprocessing().processTweet)
+dataset_pickle['text'] = dataset_pickle['text'].apply(
+    Preprocessing().processTweet)
 dataset_pickle_pickle = dataset_pickle.drop_duplicates('text')
 dataset_pickle.shape
 
 eng_stop_words = stopwords.words('indonesian')
 dataset_pickle = dataset_pickle.copy()
-dataset_pickle['tokens'] = dataset_pickle['text'].apply(Preprocessing().text_process)
+dataset_pickle['tokens'] = dataset_pickle['text'].apply(
+    Preprocessing().text_process)
 
-bow_transformer = CountVectorizer(analyzer=Preprocessing().text_process).fit(dataset_pickle['text'])
+bow_transformer = CountVectorizer(
+    analyzer=Preprocessing().text_process).fit(dataset_pickle['text'])
 messages_bow = bow_transformer.transform(dataset_pickle['text'])
 print("Dataset dibersihkan!")
 print("\nMulai train / test dengan perbandingan training 80% dan testing 20%")
 # test nya hanya 20%, training nya 80%
-X_train, X_test, y_train, y_test = train_test_split(svm_dataset['text'], svm_dataset['label'], test_size=0.2)
+X_train, X_test, y_train, y_test = train_test_split(
+    svm_dataset['text'], svm_dataset['label'], test_size=0.2)
 
-en_stopwords = set(stopwords.words("indonesian")) 
-vect = CountVectorizer(ngram_range=(1,1), token_pattern=r'\b\w{1,}\b')
+en_stopwords = set(stopwords.words("indonesian"))
+vect = CountVectorizer(ngram_range=(1, 1), token_pattern=r'\b\w{1,}\b')
 kfolds = StratifiedKFold(n_splits=5, shuffle=True, random_state=1)
 
 pipeline_svm = make_pipeline(vect,
-                            TfidfTransformer(),
-                            SVC(probability=True, kernel="rbf", class_weight="balanced"))
+                             TfidfTransformer(),
+                             SVC(probability=True, kernel="rbf", class_weight="balanced"))
 
 grid = GridSearchCV(pipeline_svm,
-                    param_grid = {'svc__C': [0.01, 0.1, 1]},
-                    cv = kfolds,
+                    param_grid={'svc__C': [0.01, 0.1, 1]},
+                    cv=kfolds,
                     scoring="roc_auc",
                     verbose=1,
                     n_jobs=-1)
@@ -98,16 +99,18 @@ params = grid.cv_results_['params']
 
 joblib.dump(grid, "model2.pkl")
 # buat test model
-model_NB = joblib.load("model2.pkl")
+model_SVM = joblib.load("model2.pkl")
 
-y_preds = model_NB.predict(X_test)
+y_preds = model_SVM.predict(X_test)
 
-print('akurasi dari train/test split: ', str(accuracy_score(y_test, y_preds) * 100) + "%")
+print('akurasi dari train/test split: ',
+      str(accuracy_score(y_test, y_preds) * 100) + "%")
 print('confusion matrix: \n', confusion_matrix(y_test, y_preds))
 print(classification_report(y_test, y_preds))
 
 # testing
-model_NB = joblib.load("model2.pkl")
+model_SVM = joblib.load("model2.pkl")
+
 
 def label_to_str(x):
     if x == 0:
@@ -115,12 +118,13 @@ def label_to_str(x):
     else:
         return 'Positive'
 
+
 x = 0
 text_ = [0] * len(svm_dataset)
 label_ = [0] * len(svm_dataset)
 
 for review in svm_dataset['text']:
-    predict = model_NB.predict([review])
+    predict = model_SVM.predict([review])
     text_[x] = review
     label_[x] = predict[0]
     x += 1
@@ -163,7 +167,7 @@ Finish = time.time()
 runningTime = Finish - Start
 print("====== Hasil Sentimen Analisis SVM ======")
 now = datetime.datetime.now()
-print ("Run Pada : "+ now.strftime("%Y-%m-%d %H:%M:%S"))
+print("Run Pada : " + now.strftime("%Y-%m-%d %H:%M:%S"))
 print("True positive : " + str(true_positive))
 print("True negative : " + str(true_negative))
 print("False positive : " + str(false_positive))
@@ -176,4 +180,3 @@ print("Akurasi =  " + str(
 print("Presisi = " + str((true_positive / (true_positive + false_positive)) * 100) + "%")
 print("Recall = " + str((true_positive / (true_positive + false_negative)) * 100) + "%")
 print("DONE!")
-
