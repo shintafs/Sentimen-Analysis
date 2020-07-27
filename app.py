@@ -1,17 +1,17 @@
 import pandas as pd
 from sklearn.pipeline import Pipeline
 from preprocessing import Preprocessing
-# from sklearn.externals import joblib
-# import sklearn.external.joblib as extjoblib
 import joblib
 import nltk
 from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 from sklearn.naive_bayes import MultinomialNB
+import datetime
 
 
 imdb_dataset = pd.read_csv("dataset2k.txt", sep="\t",
@@ -55,31 +55,29 @@ dataset_pickle['tokens'] = dataset_pickle['text'].apply(
 bow_transformer = CountVectorizer(
     analyzer=Preprocessing().text_process).fit(dataset_pickle['text'])
 messages_bow = bow_transformer.transform(dataset_pickle['text'])
-# print('Shape of Sparse Matrix: ', messages_bow.shape)
-# print('Amount of Non-Zero occurences: ', messages_bow.nnz)
 print("Dataset dibersihkan!")
 print("\nMulai train / test dengan perbandingan training 80% dan testing 20%")
 # test nya hanya 20%, training nya 80%
 X_train, X_test, y_train, y_test = train_test_split(
     imdb_dataset['text'], imdb_dataset['label'], test_size=0.2)
-
-pipeline = Pipeline([('bow', CountVectorizer(strip_accents='ascii', lowercase=True)),
-                     ('tfidf', TfidfTransformer()), ('classifier', MultinomialNB()), ])
+en_stopwords = set(stopwords.words("indonesian")) 
+kfolds = StratifiedKFold(n_splits=5, shuffle=True, random_state=1)
+vect = CountVectorizer(lowercase=True)
+pipeline = Pipeline([('bow', vect),
+                     ('tfidf', TfidfTransformer()), ('classifier', MultinomialNB()) ])
 
 parameters = {'bow__ngram_range': [(1, 1), (1, 2)], 'tfidf__use_idf': (
-    True, False), 'classifier__alpha': (1e-2, 1e-3), }
+    True, False), 'classifier__alpha': (1e-2, 1e-3) }
 
-grid = GridSearchCV(pipeline, cv=10, param_grid=parameters, verbose=1)
+grid = GridSearchCV(pipeline, cv=10, param_grid={'bow__ngram_range': [(1, 1), (1, 2)], 'tfidf__use_idf': (True, False), 'classifier__alpha': (1e-2, 1e-3) }, 
+                    scoring="roc_auc",
+                    verbose=1,
+                    n_jobs=-1)
 grid.fit(X_train, y_train)
 
-# hasil ->
-# print("\nModel: %f using %s" % (grid.best_score_, grid.best_params_))
-# print('\n')
 means = grid.cv_results_['mean_test_score']
 stds = grid.cv_results_['std_test_score']
 params = grid.cv_results_['params']
-# for mean, stdev, param in zip(means, stds, params):
-#     print("Mean: %f Stdev:(%f) with: %r" % (mean, stdev, param))
 
 joblib.dump(grid, "model.pkl")
 # buat test model
@@ -117,7 +115,7 @@ print("write ke csv")
 hehe = {"text": text_, "label": label_}
 hehe2 = pd.DataFrame(data=hehe)
 hehe2.to_csv('test_ulang_dataset.csv', header=True, index=False,
-             encoding='cp1252', errors='ignore', error_bad_lines=False)
+             encoding='cp1252')
 hasil_test_ulang = pd.read_csv(
     "test_ulang_dataset.csv", encoding='cp1252', header='infer', error_bad_lines=False)
 hasil_test_ulang.columns = ['text', 'label']
@@ -152,6 +150,10 @@ for predicted_label in hasil_test_ulang['label']:
 
     # print(imdb_dataset['label'] == predicted_label)
     # print(predicted_label == 1)
+print("====== Hasil Sentimen Analisis NB ======")
+now = datetime.datetime.now()
+print ("Run Pada : ")
+print (now.strftime("%Y-%m-%d %H:%M:%S"))
 print("True positive : " + str(true_positive))
 print("True negative : " + str(true_negative))
 print("False positive : " + str(false_positive))
