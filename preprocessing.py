@@ -5,6 +5,7 @@ from string import punctuation
 from nltk.corpus import stopwords
 import json
 import numpy as np
+# from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 
 class Preprocessing :
     def __init__(self):
@@ -37,6 +38,9 @@ class Preprocessing :
         tweet = re.sub(r'\&\w*;', '', tweet)
         tweet = re.sub('@[^\s]+','',tweet)
         tweet = re.sub(r'\$\w*', '', tweet)
+        factory = StemmerFactory()
+        tweet = factory.create_stemmer()
+        tweet = tweet.stem()
         tweet = tweet.lower()
         tweet = re.sub(r'https?:\/\/.*\/\w*', '', tweet)
         tweet = re.sub(r'#\w*', '', tweet)

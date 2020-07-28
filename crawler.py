@@ -8,7 +8,7 @@ waitQuery = 100
 waitTime = 2.0
 engineBlow = 1
 Preprocessing = Preprocessing()
-csvFile = open('darkphoenix.csv', 'w', encoding='utf-8')
+csvFile = open('crawl.csv', 'w', encoding='utf-8')
 csvWriter = csv.writer(csvFile)
 
 def search() :

@@ -3,7 +3,7 @@ import joblib
 from tkinter import messagebox
 
 
-model = joblib.load("model.pkl")
+model = joblib.load("model2.pkl")
 
 def label_to_str(x):
     if x == 0:
@@ -23,7 +23,7 @@ def btn_event():
 form = tk.Tk()
 form.title("ydhnwb")
 
-label1 = tk.Label(form, text = "Masukkan sebuah kalimat (ENG)")
+label1 = tk.Label(form, text = "Masukkan sebuah kalimat")
 editText = tk.Entry(form)
 btn = tk.Button(form, text = "Submit", bg = "purple", fg = "white", command = lambda : btn_event())
 

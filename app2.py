@@ -25,6 +25,7 @@ from sklearn.metrics import roc_curve, auc
 from sklearn.metrics import confusion_matrix, roc_auc_score, recall_score, precision_score
 import datetime
 import time
+import sys
 
 
 svm_dataset = pd.read_csv("dataset2k.txt", sep="\t",
@@ -75,6 +76,8 @@ X_train, X_test, y_train, y_test = train_test_split(
     svm_dataset['text'], svm_dataset['label'], test_size=0.2)
 
 en_stopwords = set(stopwords.words("indonesian"))
+# print(en_stopwords)
+# sys.exit()
 vect = CountVectorizer(ngram_range=(1, 1), token_pattern=r'\b\w{1,}\b')
 kfolds = StratifiedKFold(n_splits=5, shuffle=True, random_state=1)
 
